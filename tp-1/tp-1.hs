@@ -234,18 +234,18 @@ estaVacia _  = False
 
 -- b) Dada una lista devuelve su primer elemento. Definida en Haskell como head. Nota: tener en cuenta que el constructor de 
 -- listas es :.
-elPrimero :: [a] -> a
+elPrimero :: [a] -> a -- PRECOND.: La lista no puede ser vacía.
 elPrimero []    = error "La lista no tiene elementos"
 elPrimero (x:_) = x
 
 -- c) Dada una lista devuelve esa lista menos el primer elemento. Definida en Haskell como tail. Nota: tener en cuenta que el 
 -- constructor de listas es :.
-sinElPrimero :: [a] -> [a]
+sinElPrimero :: [a] -> [a] -- PRECOND.: La lista no puede ser vacía.
 sinElPrimero []     = []
 sinElPrimero (_:xs) = xs
 
 -- d) Dada una lista devuelve un par, donde la primera componente es el primer elemento de la lista, y la segunda componente 
 -- es esa lista pero sin el primero. Nota: tener en cuenta que el constructor de listas es :.
-splitHead :: [a] -> (a, [a])
+splitHead :: [a] -> (a, [a]) -- PRECOND.: La lista no puede ser vacía.
 splitHead []     = error "La lista no tiene elementos"
 splitHead (x:xs) = (x, xs)
