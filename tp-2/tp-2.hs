@@ -218,8 +218,8 @@ charmander = ConsPokemon Fuego  65
 squirtle   = ConsPokemon Agua   94
 oddish     = ConsPokemon Planta 85
 
-chiaraE = ConsEntrenador "chiara" [bulbasaur, psyduck, vileplume]
-luciaE  = ConsEntrenador "lucia"  [charmander, squirtle, oddish]
+chiaraE = ConsEntrenador "chiara" [bulbasaur, psyduck, vileplume, squirtle, charmander]
+luciaE  = ConsEntrenador "lucia"  []
 
 -- Como puede observarse, ahora los entrenadores tienen una cantidad de Pokemon arbitraria. Definir en base a esa representación las siguientes funciones:
 
@@ -240,17 +240,44 @@ pokemonesDeTipo t (p:ps) = if mismoTipo t (tipo p)
                             then p : pokemonesDeTipo t ps
                             else pokemonesDeTipo t ps
 
+-- tp-1
 mismoTipo :: TipoDePokemon -> TipoDePokemon -> Bool
 mismoTipo Fuego  Fuego = True
 mismoTipo Agua   Agua  = True
 mismoTipo Planta Planta = True
 mismoTipo _      _      = False
 
+-- tp-1
 tipo :: Pokemon -> TipoDePokemon
 tipo (ConsPokemon t _) = t
 
 -- Dados dos entrenadores, indica la cantidad de Pokemon de cierto tipo, que le ganarían a los Pokemon del segundo entrenador.
--- cuantosDeTipo_De_LeGananATodosLosDe_ :: TipoDePokemon -> Entrenador -> Entrenador -> Int
+cuantosDeTipo_De_LeGananATodosLosDe_ :: TipoDePokemon -> Entrenador -> Entrenador -> Int
+cuantosDeTipo_De_LeGananATodosLosDe_ t e1 e2 = longitud (losDeTipo_De_QueLeGananATodosLosDe_ t e1 e2)
+
+losDeTipo_De_QueLeGananATodosLosDe_ :: TipoDePokemon -> Entrenador -> Entrenador -> [Pokemon]
+losDeTipo_De_QueLeGananATodosLosDe_ t e1 e2 = pokemonesDeTipo t (losQueLeGananATodos (pokemonesDe e1) (pokemonesDe e2))
+
+losQueLeGananATodos :: [Pokemon] -> [Pokemon] -> [Pokemon]
+losQueLeGananATodos []     _   = []
+losQueLeGananATodos (p:ps) pks = if superaATodos p pks
+                                    then p : losQueLeGananATodos ps pks
+                                    else losQueLeGananATodos ps pks
+
+superaATodos :: Pokemon -> [Pokemon] -> Bool
+superaATodos p []       = True
+superaATodos p (pk:pks) = superaA p pk && superaATodos p pks
+
+-- tp-1
+superaA :: Pokemon -> Pokemon -> Bool
+superaA pk1 pk2 = esSuperiorA (tipo pk1) (tipo pk2)
+
+-- tp-1
+esSuperiorA :: TipoDePokemon -> TipoDePokemon -> Bool
+esSuperiorA Agua   Fuego  = True
+esSuperiorA Fuego  Planta = True
+esSuperiorA Planta Agua   = True
+esSuperiorA _      _      = False
 
 -- Dado un entrenador, devuelve True si posee al menos un Pokémon de cada tipo posible.
 esMaestroPokemon :: Entrenador -> Bool
@@ -305,7 +332,7 @@ nombreProyecto (ConsProyecto s) = s
 
 -- Dada una empresa indica la cantidad de desarrolladores senior que posee, que pertenecen además a los proyectos dados por parámetro.
 losDevSenior :: Empresa -> [Proyecto] -> Int
-losDevSenior (ConsEmpresa rs) ps = longitud (losDevSeniorDe_ (losDe_QueParticipanEn_ rs ps) ps)
+losDevSenior (ConsEmpresa rs) ps = longitud (losDevSeniorDe_ (losQueParticipanEn_ rs ps) ps)
 
 losDevSeniorDe_ :: [Rol] -> [Proyecto] -> [Rol]
 losDevSeniorDe_ []     ps = []
@@ -313,11 +340,11 @@ losDevSeniorDe_ (r:rs) ps = if esDevSenior r
                                 then r : losDevSeniorDe_ rs ps
                                 else losDevSeniorDe_ rs ps
                           
-losDe_QueParticipanEn_ :: [Rol] -> [Proyecto] -> [Rol]
-losDe_QueParticipanEn_ []     ps = []
-losDe_QueParticipanEn_ (r:rs) ps = if participa_EnAlgunProyecto r ps
-                                    then r : losDe_QueParticipanEn_ rs ps
-                                    else losDe_QueParticipanEn_ rs ps
+losQueParticipanEn_ :: [Rol] -> [Proyecto] -> [Rol]
+losQueParticipanEn_ []     ps = []
+losQueParticipanEn_ (r:rs) ps = if participa_EnAlgunProyecto r ps
+                                    then r : losQueParticipanEn_ rs ps
+                                    else losQueParticipanEn_ rs ps
 
 participa_EnAlgunProyecto :: Rol -> [Proyecto] -> Bool
 participa_EnAlgunProyecto r []     = False
@@ -329,7 +356,7 @@ esDevSenior _                    = False
 
 -- Indica la cantidad de empleados que trabajan en alguno de los proyectos dados.
 cantQueTrabajanEn :: [Proyecto] -> Empresa -> Int
-cantQueTrabajanEn ps (ConsEmpresa rs) = longitud (losDe_QueParticipanEn_ rs ps)
+cantQueTrabajanEn ps (ConsEmpresa rs) = longitud (losQueParticipanEn_ rs ps)
 
 -- Devuelve una lista de pares que representa a los proyectos (sin repetir) junto con su cantidad de personas involucradas.
 -- falta que no se repitan
