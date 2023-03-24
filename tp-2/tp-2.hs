@@ -309,9 +309,8 @@ empresa = ConsEmpresa [marcos, martina, carla, daniela, tomas]
 -- Definir las siguientes funciones sobre el tipo Empresa:
 
 -- Dada una empresa denota la lista de proyectos en los que trabaja, sin elementos repetidos.
--- falta que no se repitan
 proyectos :: Empresa -> [Proyecto]
-proyectos (ConsEmpresa rs) = proyectosDeRoles rs
+proyectos (ConsEmpresa rs) = sinDuplicados (proyectosDeRoles rs)
 
 proyectosDeRoles :: [Rol] -> [Proyecto]
 proyectosDeRoles []     = []
@@ -329,6 +328,16 @@ mismoNombre s1 s2 = s1 == s2
 
 nombreProyecto :: Proyecto -> String
 nombreProyecto (ConsProyecto s) = s
+
+nombresProyectos :: [Proyecto] -> [String]
+nombresProyectos []     = []
+nombresProyectos (p:ps) = nombreProyecto p : nombresProyectos ps
+
+sinDuplicados :: [Proyecto] -> [Proyecto]
+sinDuplicados []     = []
+sinDuplicados (p:ps) = if pertenece (nombreProyecto p) (nombresProyectos ps)
+                        then sinDuplicados ps
+                        else p : sinDuplicados ps
 
 -- Dada una empresa indica la cantidad de desarrolladores senior que posee, que pertenecen además a los proyectos dados por parámetro.
 losDevSenior :: Empresa -> [Proyecto] -> Int
@@ -359,7 +368,6 @@ cantQueTrabajanEn :: [Proyecto] -> Empresa -> Int
 cantQueTrabajanEn ps (ConsEmpresa rs) = longitud (losQueParticipanEn_ rs ps)
 
 -- Devuelve una lista de pares que representa a los proyectos (sin repetir) junto con su cantidad de personas involucradas.
--- falta que no se repitan
 asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
 asignadosPorProyecto e = asignadosDe_PorProyectos e (proyectos e)
 
