@@ -95,6 +95,9 @@ camino0 = Cofre [Cacharro, Cacharro] Fin
 camino1 = Nada (Cofre [Tesoro] (Nada Fin))
 camino2 = Cofre [Cacharro, Cacharro] (Nada Fin)                     
 camino3 = Nada (Nada (Cofre [Tesoro, Cacharro, Tesoro] (Nada Fin)))
+camino4 = Nada (Nada (Nada (Cofre [Tesoro, Tesoro, Tesoro, Tesoro, Tesoro] Fin)))
+camino5 = Nada (Cofre [Tesoro, Cacharro, Tesoro] (Cofre [Tesoro] (Nada (Cofre [Tesoro] (Nada (Cofre [Tesoro, Cacharro, Cacharro] Fin))))))
+camino6 = Cofre [Tesoro, Cacharro] (Nada (Cofre [Tesoro, Tesoro] (Nada (Cofre [Tesoro, Tesoro, Cacharro, Tesoro] (Cofre [Tesoro] Fin)))))
 
 -- Definir las siguientes funciones:
 
@@ -114,18 +117,55 @@ esTesoro _      = False
 
 -- Indica la cantidad de pasos que hay que recorrer hasta llegar al primer cofre con un tesoro. Si un cofre con un tesoro está al 
 -- principio del camino, la cantidad de pasos a recorrer es 0. Precondición: tiene que haber al menos un tesoro.
--- pasosHastaTesoro :: Camino -> Int -- PRECOND.: hay al menos un tesoro en el camino.
+pasosHastaTesoro :: Camino -> Int
+pasosHastaTesoro (Cofre os c) = if hayAlgunTesoroEn os then 0 else 1 + pasosHastaTesoro c
+pasosHastaTesoro (Nada c)     = 1 + pasosHastaTesoro c
 
 -- Indica si hay un tesoro en una cierta cantidad exacta de pasos. Por ejemplo, si el número de pasos es 5, indica si hay un 
 -- tesoro en 5 pasos.
--- hayTesoroEn :: Int -> Camino -> Bool
+hayTesoroEn :: Int -> Camino -> Bool
+hayTesoroEn 0 c = hayTesoroEnEstePunto c
+hayTesoroEn n c = hayTesoroEn (n-1) (darUnPaso c)
+
+darUnPaso :: Camino -> Camino
+darUnPaso Fin          = Fin
+darUnPaso (Cofre os c) = c
+darUnPaso (Nada c)     = c
+
+hayTesoroEnEstePunto :: Camino -> Bool
+hayTesoroEnEstePunto Fin          = False
+hayTesoroEnEstePunto (Cofre os c) = hayAlgunTesoroEn os
+hayTesoroEnEstePunto (Nada c)     = False
 
 -- Indica si hay al menos “n” tesoros en el camino.
--- alMenosNTesoros :: Int -> Camino -> Bool
+alMenosNTesoros :: Int -> Camino -> Bool
+alMenosNTesoros 0 _            = True
+alMenosNTesoros n Fin          = False
+alMenosNTesoros n (Cofre os c) = (cantTesoros os > n) || alMenosNTesoros (n - (cantTesoros os)) c
+alMenosNTesoros n (Nada c)     = alMenosNTesoros n c
+
+cantTesoros :: [Objeto] -> Int
+cantTesoros []     = 0
+cantTesoros (o:os) = unoSiCeroSino (esTesoro o) + cantTesoros os
 
 -- (desafío) Dado un rango de pasos, indica la cantidad de tesoros que hay en ese rango. Por ejemplo, si el rango es 3 y 5, indica 
 -- la cantidad de tesoros que hay entre hacer 3 pasos y hacer 5. Están incluidos tanto 3 como 5 en el resultado.
--- cantTesorosEntre :: Int -> Int -> Camino -> Int
+cantTesorosEntre :: Int -> Int -> Camino -> Int
+cantTesorosEntre n m c = cantTesorosHasta (m-n) (darNPasos n c)
+
+cantTesorosHasta :: Int -> Camino -> Int
+cantTesorosHasta 0 c = cantTesorosEnEstePunto c
+cantTesorosHasta n c = cantTesorosEnEstePunto c + cantTesorosHasta (n-1) (darUnPaso c)
+
+cantTesorosEnEstePunto :: Camino -> Int
+cantTesorosEnEstePunto (Cofre os c) = cantTesoros os
+cantTesorosEnEstePunto _            = 0
+
+darNPasos :: Int -> Camino -> Camino
+darNPasos 0 c            = c
+darNPasos n Fin          = Fin
+darNPasos n (Cofre os c) = darNPasos (n-1) c
+darNPasos n (Nada c)     = darNPasos (n-1) c
 
 -- 2. Tipos arbóreos
 -- 2.1. Árboles binarios
@@ -209,21 +249,34 @@ levelN 0 (NodeT x t1 t2) = [x]
 levelN n (NodeT x t1 t2) = levelN (n-1) t1 ++ levelN (n-1) t2
 
 -- 11. Dado un árbol devuelve una lista de listas en la que cada elemento representa un nivel de dicho árbol.
--- listPerLevel :: Tree a -> [[a]]
--- listPerLevel EmptyT          = ...
--- listPerLevel (NodeT x t1 t2) = x ... listPerLevel t1 : listPerLevel t2
+listPerLevel :: Tree a -> [[a]]
+listPerLevel EmptyT          = []
+listPerLevel (NodeT x t1 t2) = [x] : (zipListas (listPerLevel t1) (listPerLevel t2))
+
+zipListas :: [[a]] -> [[a]] -> [[a]]
+zipListas   xss      []     = xss
+zipListas   []       yss    = yss
+zipListas (xs:xss) (ys:yss) = (xs ++ ys) : zipListas xss yss
 
 -- 12. Devuelve los elementos de la rama más larga del árbol.
 ramaMasLarga :: Tree a -> [a]
 ramaMasLarga EmptyT          = []
-ramaMasLarga (NodeT x t1 t2) = if length (ramaMasLarga t1) > length (ramaMasLarga t2)
-                                then x : ramaMasLarga t1
-                                else x : ramaMasLarga t2
+ramaMasLarga (NodeT x t1 t2) = x : listaConMasElementos (ramaMasLarga t1) (ramaMasLarga t2)
 
+listaConMasElementos :: [a] -> [a] -> [a]
+listaConMasElementos xs ys = if length xs > length ys
+                                then xs
+                                else ys
+ 
 -- 13. Dado un árbol devuelve todos los caminos, es decir, los caminos desde la raiz hasta las hojas.
--- todosLosCaminos :: Tree a -> [[a]]
--- todosLosCaminos EmptyT          = ...
--- todosLosCaminos (NodeT x t1 t2) = ... x ... todosLosCaminos t1 ... todosLosCaminos t2
+todosLosCaminos :: Tree a -> [[a]]
+todosLosCaminos EmptyT                  = []
+todosLosCaminos (NodeT x EmptyT EmptyT) = [[x]]
+todosLosCaminos (NodeT x t1 t2)         = consATodas x (todosLosCaminos t1 ++ todosLosCaminos t2)
+
+consATodas :: a -> [[a]] -> [[a]]
+consATodas e []       = []
+consATodas e (xs:xss) = (e:xs) : consATodas e xss
 
 -- 2.2. Expresiones Aritméticas
 -- El tipo algebraico ExpA modela expresiones aritméticas de la siguiente manera:
