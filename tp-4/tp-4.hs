@@ -33,7 +33,6 @@ esJamon _     = False
 
 -- Dice si una pizza tiene solamente salsa y queso (o sea, no tiene de otros ingredientes. En particular, la prepizza, al no 
 -- tener ningún ingrediente, debería dar verdadero.)
--- salsa Y queso solamente o salsa O queso?
 tieneSoloSalsaYQueso :: Pizza -> Bool
 tieneSoloSalsaYQueso Prepizza     = True
 tieneSoloSalsaYQueso (Capa ing p) = (esSalsa ing || esQueso ing) && tieneSoloSalsaYQueso p
@@ -90,7 +89,8 @@ mapa3 = Bifurcacion (Cofre [Chatarra])
                                  (Fin (Cofre [Chatarra]))) 
                     (Bifurcacion (Cofre [Chatarra]) 
                                  (Fin (Cofre [Chatarra])) 
-                                 (Fin (Cofre [Tesoro]))) 
+                                 (Bifurcacion (Cofre [Tesoro]) (Fin (Cofre [Chatarra]))
+                                                               (Fin (Cofre [Tesoro, Chatarra])))) 
 
 -- Indica si hay un tesoro en alguna parte del mapa.
 hayTesoro :: Mapa -> Bool
@@ -148,14 +148,16 @@ elegirMapaConTesoro m1 m2 = if hayTesoro m1
                                else Der : caminoAlTesoro' m2
 
 -- Indica el camino de la rama más larga.
--- caminoDeLaRamaMasLarga :: Mapa -> [Dir]
--- caminoDeLaRamaMasLarga (Fin c)               = ...
--- caminoDeLaRamaMasLarga (Bifurcacion c m1 m2) = ... c ... caminoMasLargo (caminoDeLaRamaMasLarga m1) (caminoDeLaRamaMasLarga m2)
--- 
--- caminoMasLargo :: [Dir] -> [Dir] -> [Dir]
--- caminoMasLargo ds1 ds2 = if length ds1 > length ds2
---                             then ds1
---                             else ds2
+caminoDeLaRamaMasLarga :: Mapa -> [Dir]
+caminoDeLaRamaMasLarga (Fin c)               = []
+caminoDeLaRamaMasLarga (Bifurcacion c m1 m2) = if length (caminoDeLaRamaMasLarga m1) > length (caminoDeLaRamaMasLarga m2)
+                                                then Izq : caminoDeLaRamaMasLarga m1
+                                                else Der : caminoDeLaRamaMasLarga m2
+
+caminoMasLargo :: [Dir] -> [Dir] -> [Dir]
+caminoMasLargo ds1 ds2 = if length ds1 > length ds2
+                            then ds1
+                            else ds2
 
 -- Devuelve los tesoros separados por nivel en el árbol.
 tesorosPorNivel :: Mapa -> [[Objeto]]
@@ -171,13 +173,13 @@ zipListas   []       yss    = yss
 zipListas (xs:xss) (ys:yss) = (xs ++ ys) : zipListas xss yss
 
 -- Devuelve todos lo caminos en el mapa.
--- todosLosCaminos :: Mapa -> [[Dir]]
--- todosLosCaminos (Fin c)               = []
--- todosLosCaminos (Bifurcacion c m1 m2) = [] : (consDirATodas Izq (todosLosCaminos m1)) ++ (consDirATodas Der (todosLosCaminos m2))
--- 
--- consDirATodas :: Dir -> [[Dir]] -> [[Dir]]
--- consDirATodas d []       = []
--- consDirATodas d (ds:dss) = (d:ds) : consDirATodas d dss
+todosLosCaminos :: Mapa -> [[Dir]]
+todosLosCaminos (Fin c)               = []
+todosLosCaminos (Bifurcacion c m1 m2) = [] : (consDirATodas Izq (todosLosCaminos m1) ++ consDirATodas Der (todosLosCaminos m2))
+
+consDirATodas :: Dir -> [[Dir]] -> [[Dir]]
+consDirATodas d []       = [[d]]
+consDirATodas d (ds:dss) = (d:ds) : consDirATodas d dss
 
 data Componente = LanzaTorpedos | Motor Int | Almacen [Barril] deriving Show
 data Barril = Comida | Oxigeno | Torpedo | Combustible deriving Show
@@ -315,10 +317,10 @@ data Lobo = Cazador Nombre [Presa] Lobo Lobo Lobo | Explorador Nombre [Territori
 data Manada = M Lobo deriving Show
 
 manada = M lobo1'
-lobo1' = Cazador "jorge" ["conejo", "liebre", "liebre", "alce", "jabali", "venado", "mula", "mula"] lobo2' lobo3' lobo4'
+lobo1' = Cazador "jorge" ["conejo", "liebre", "alce"] lobo2' lobo3' lobo4'
 lobo2' = Explorador "marta" ["montana", "lago", "rio"] lobo5' lobo6'
-lobo3' = Cazador "alicia" ["alce", "liebre", "mula", "alce", "venado"] lobo7 lobo8' lobo9'
-lobo4' = Explorador "luis" ["montana", "playa", "lago"] lobo10' lobo11'
+lobo3' = Cazador "alicia" ["alce", "mula", "venado"] lobo7 lobo8' lobo9'
+lobo4' = Explorador "luis" ["playa", "lago"] lobo10' lobo11'
 lobo5' = Cria "carlos"
 lobo6' = Cria "mario"
 lobo7' = Cria "roberto"
@@ -389,25 +391,42 @@ losQueExploraronL t (Cria       n)             = []
 
 -- Propósito: dada una manada, denota la lista de los pares cuyo primer elemento es un territorio y cuyo segundo elemento es la 
 -- lista de los nombres de los exploradores que exploraron dicho territorio. Los territorios no deben repetirse.
--- exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
--- exploradoresPorTerritorio (M lobo) = exploradoresPorTerritorioL lobo
--- 
--- exploradoresPorTerritorioL :: Lobo -> [(Territorio, [Nombre])]
--- exploradoresPorTerritorioL (Cazador    n ps l1 l2 l3) = juntarExploradores (exploradoresPorTerritorioL l1) (juntarExploradores (exploradoresPorTerritorioL l2) (exploradoresPorTerritorioL l3))
--- exploradoresPorTerritorioL (Explorador n ts l1 l2)    = juntarExploradores (exploradoresPorTerritorioL l1) (exploradoresPorTerritorioL l2)
--- exploradoresPorTerritorioL (Cria       n)             = []
--- 
--- juntarExploradores :: [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
--- juntarExploradores []       ys = ys
--- juntarExploradores (tn:tns) ys = agregarNombres tn (juntarExploradores tns ys)
--- 
--- agregarNombres :: (Territorio, [Nombre]) -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
--- agregarNombres (t, ns) []              = [(t,ns)]
--- agregarNombres (t, ns) ((t', ns'):tns) = if t == t'
---                                           then (t, ns++ns') : tns
---                                           else agregarNombres (t,ns) tns
+exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
+exploradoresPorTerritorio (M lobo) = exploradoresPorTerritorioL lobo
+
+exploradoresPorTerritorioL :: Lobo -> [(Territorio, [Nombre])]
+exploradoresPorTerritorioL (Cazador    n ps l1 l2 l3) = juntarExploradores (exploradoresPorTerritorioL l1) (juntarExploradores (exploradoresPorTerritorioL l2) (exploradoresPorTerritorioL l3))
+exploradoresPorTerritorioL (Explorador n ts l1 l2)    = (crearTuplasExplorador n ts) ++ juntarExploradores (exploradoresPorTerritorioL l1) (exploradoresPorTerritorioL l2)
+exploradoresPorTerritorioL (Cria       n)             = []
+
+crearTuplasExplorador :: Nombre -> [Territorio] -> [(Territorio, [Nombre])]
+crearTuplasExplorador n []     = []
+crearTuplasExplorador n (t:ts) = (t, [n]) : crearTuplasExplorador n ts
+
+juntarExploradores :: [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
+juntarExploradores []       ys = ys
+juntarExploradores (tn:tns) ys = agregarNombres tn (juntarExploradores tns ys)
+
+agregarNombres :: (Territorio, [Nombre]) -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
+agregarNombres (t, ns) []              = [(t,ns)]
+agregarNombres (t, ns) ((t', ns'):tns) = if t == t'
+                                          then (t, ns++ns') : tns
+                                          else (t', ns') : agregarNombres (t,ns) tns
 
 -- Propósito: dado un nombre de cazador y una manada, indica el nombre de todos los cazadores que tienen como subordinado al cazador dado 
 -- (directa o indirectamente).
 -- Precondición: hay un cazador con dicho nombre y es único.
--- superioresDelCazador :: Nombre -> Manada -> [Nombre]
+superioresDelCazador :: Nombre -> Manada -> [Nombre]
+superioresDelCazador n (M lobo) = superioresDelCazadorL n lobo
+
+superioresDelCazadorL :: Nombre -> Lobo -> [Nombre]
+superioresDelCazadorL n (Cazador    n' ps l1 l2 l3) = if ((nombreLobo l1) == n) || ((nombreLobo l2) == n) || ((nombreLobo l3) == n)
+                                                        then n' : []
+                                                        else superioresDelCazadorL n l1 ++ superioresDelCazadorL n l2 ++ superioresDelCazadorL n l3
+superioresDelCazadorL n (Explorador n' ts l1 l2)    = superioresDelCazadorL n l1 ++ superioresDelCazadorL n l2
+superioresDelCazadorL n (Cria       n')             = []
+
+nombreLobo :: Lobo -> Nombre
+nombreLobo (Cazador    n ps l1 l2 l3) = n
+nombreLobo (Explorador n ts l1 l2)    = n
+nombreLobo (Cria       n)             = n
