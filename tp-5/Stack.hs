@@ -11,7 +11,7 @@ data Stack a = ...
 -- Crea una pila vacía.
 emptySt :: Stack a
 -- Dada una pila indica si está vacía.
-isEmptyS :: Stack a -> Bool
+isEmptySt :: Stack a -> Bool
 -- Dados un elemento y una pila, agrega el elemento a la pila.
 push :: a -> Stack a -> Stack a
 -- Dada un pila devuelve el elemento del tope de la pila.
@@ -20,3 +20,11 @@ top :: Stack a -> a
 pop :: Stack a -> Stack a
 -- Dada la cantidad de elementos en la pila. Costo: constante.
 lenS :: Stack a -> Int
+
+-- Me faltan los costos
+emptyST             = St []
+isEmptySt   (St es) = null es
+push      e (St es) = St (e:es)
+top         (St es) = head es
+pop         (St es) = St (tail es)
+lenS        (St es) = length es

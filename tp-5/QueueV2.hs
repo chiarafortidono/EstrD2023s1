@@ -17,3 +17,22 @@ enqueue :: a -> Queue a -> Queue a
 firstQ :: Queue a -> a
 -- Dada una cola la devuelve sin su primer elemento.
 dequeue :: Queue a -> Queue a
+
+-- Me faltan los costos
+emptyQ             = Q2 []
+isEmptyQ   (Q2 es) = null es
+enqueue  e (Q2 es) = Q2 (e:es)
+firstQ     (Q2 es) = elUltimo es
+dequeue    (Q2 es) = Q2 (sinElUltimo es)
+
+elUltimo :: [a] -> a
+elUltimo []     = error "No hay elementos en la queue"
+elUltimo (x:xs) = if null xs
+                    then x
+                    else elUltimo xs
+
+sinElUltimo :: [a] -> [a]
+sinElUltimo []     = []
+sinElUltimo (x:xs) = if null xs
+                        then [x]
+                        else x : sinElUltimo xs

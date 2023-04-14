@@ -17,3 +17,18 @@ enqueue :: a -> Queue a -> Queue a
 firstQ :: Queue a -> a
 -- Dada una cola la devuelve sin su primer elemento.
 dequeue :: Queue a -> Queue a
+
+-- Me faltan los costos
+emptyQ             = Q1 []
+isEmptyQ   (Q1 es) = null es
+enqueue  e (Q1 es) = Q1 (agregarAlFinal es e)
+firstQ     (Q1 es) = if null es
+                        then error "No hay elementos en la queue"
+                        else head es
+dequeue    (Q1 es) = if null es
+                        then error "No hay elementos en la queue"
+                        else Q1 (tail es)
+
+agregarAlFinal :: [a] -> a -> [a]
+agregarAlFinal []     e = [e]
+agregarAlFinal (x:xs) e = x : agregarAlFinal xs e
