@@ -1,4 +1,4 @@
-module Stack (Stack, emptySt, isEmptyS, push, top, pop, lenS) where
+module Stack (Stack, emptySt, isEmptySt, push, top, pop, lenS) where
 
 -- Stack (pila)
 -- Una Stack es un tipo abstracto de datos de naturaleza LIFO (last in, first out). Esto significa que los últimos elementos agregados a la 
@@ -6,7 +6,7 @@ module Stack (Stack, emptySt, isEmptyS, push, top, pop, lenS) where
 
 -- Implementar el tipo abstracto Stack utilizando una lista.
 
-data Stack a = ... 
+data Stack a = St [a]
 
 -- Crea una pila vacía.
 emptySt :: Stack a
@@ -21,10 +21,9 @@ pop :: Stack a -> Stack a
 -- Dada la cantidad de elementos en la pila. Costo: constante.
 lenS :: Stack a -> Int
 
--- Me faltan los costos
-emptyST             = St []
-isEmptySt   (St es) = null es
-push      e (St es) = St (e:es)
-top         (St es) = head es
-pop         (St es) = St (tail es)
-lenS        (St es) = length es
+emptySt             = St []         -- Costo O(1)
+isEmptySt   (St es) = null es       -- Costo O(1)
+push      e (St es) = St (e:es)     -- Costo O(1)
+top         (St es) = head es       -- Costo O(1)
+pop         (St es) = St (tail es)  -- Costo O(1)
+lenS        (St es) = length es     -- Costo O(1)
