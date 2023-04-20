@@ -1,4 +1,4 @@
-module QueueV3 (QueueV3, emptyQ, isEmptyQ, enqueue, firstQ, dequeue) where
+module QueueV3 (Queue, emptyQ, isEmptyQ, enqueue, firstQ, dequeue) where
 
 -- Queue (cola)
 -- Una Queue es un tipo abstracto de datos de naturaleza FIFO (first in, first out). Esto significa que los elementos salen en el orden con el 
@@ -10,7 +10,10 @@ module QueueV3 (QueueV3, emptyQ, isEmptyQ, enqueue, firstQ, dequeue) where
 -- garantizar el siguiente invariante de representación: Si fs se encuentra vacía, entonces la cola se encuentra vacía. Qué ventaja tiene esta 
 -- representación de Queue con respecto a la que usa una sola lista?
 
-data QueueV3 a = ...
+data Queue a = QQQ [a] [a]
+{- INV. REP.: en QQQ fs bs,
+    *
+-}
 
 -- Crea una cola vacía.
 emptyQ :: Queue a
