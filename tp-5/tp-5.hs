@@ -1,8 +1,8 @@
 import SetV1
 -- import SetV2
 -- import QueueV1
-import QueueV2
--- import QueueV3
+-- import QueueV2
+import QueueV3
 import Stack
 
 -- Cálculo de costos
@@ -16,17 +16,17 @@ head' (x:xs) = x
 sumar :: Int -> Int
 sumar x = x + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
 
--- Costo O(n), se hace una operación constante (la multiplicación) por cada una de las veces que se hace recursión.
+-- Costo O(n), siendo n el valor al cual se aplica el factorial.
 factorial :: Int -> Int
 factorial 0 = 1
 factorial n = n * factorial (n-1)
 
--- Costo O(n), se hace la suma (operación constante) por cada elemento de la lista en cada llamado recursivo.
+-- Costo O(n), siendo n la cantidad de elementos de la lista.
 longitud :: [a] -> Int
 longitud [] = 0
 longitud (x:xs) = 1 + longitud xs
 
--- Costo O(n^2), por cada elemento de la lista en la recursión se hace una operación lineal.
+-- Costo O(n*m), siendo n el costo de factorial y m el máximo Int de la lista.
 factoriales :: [Int] -> [Int]
 factoriales []     = []
 factoriales (x:xs) = factorial x : factoriales xs
@@ -36,7 +36,7 @@ pertenece :: Eq a => a -> [a] -> Bool
 pertenece n []     = False
 pertenece n (x:xs) = n == x || pertenece n xs
 
--- Costo O(n^2), en el peor caso, por cada elemento de la lista se hace una operación lineal (pertenece).
+-- Costo O(n^2), en el peor caso, por cada uno de los elementos de la lista se hace una operación lineal (pertenece).
 sinRepetidos' :: Eq a => [a] -> [a]
 sinRepetidos' []     = []
 sinRepetidos' (x:xs) = if pertenece x xs
@@ -100,9 +100,12 @@ losQuePertenecen (e:es) s = if belongs e s
                                 else losQuePertenecen es s
 
 -- Quita todos los elementos repetidos de la lista dada utilizando un conjunto como estructura auxiliar.
--- sinRepetidos :: Eq a => [a] -> [a]
--- sinRepetidos []     = 
--- sinRepetidos (e:es) = ... e ... sinRepetidos es
+sinRepetidos :: Eq a => [a] -> [a]
+sinRepetidos xs = setToList (listToSet xs)
+
+listToSet :: Eq a => [a] -> Set a
+listToSet []     = emptyS
+listToSet (x:xs) = addS x (listToSet xs)
 
 -- Dado un arbol de conjuntos devuelve un conjunto con la union de todos los conjuntos del arbol.
 data Tree a = EmptyT | NodeT a (Tree a) (Tree a)
@@ -153,6 +156,6 @@ desapilar st = if isEmptySt st
 
 -- Dada una posicion válida en la stack y un elemento, ubica dicho elemento en dicha posición (se desapilan elementos hasta dicha posición y 
 -- se inserta en ese lugar).
--- insertarEnPos :: Int -> a -> Stack a -> Stack a -- PRECOND.: la posición debe ser válida en la lista.
--- insertarEnPos 0 e st = ...
--- insertarEnPos n e st = ... n ... e ... insertarEnPos (n-1) e st
+insertarEnPos :: Int -> a -> Stack a -> Stack a -- PRECOND.: la posición debe ser válida en la lista.
+insertarEnPos 0 e st = push e st
+insertarEnPos n e st = push (top st) (insertarEnPos (n-1) e (pop st))

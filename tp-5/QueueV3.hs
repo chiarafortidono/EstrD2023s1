@@ -12,7 +12,7 @@ module QueueV3 (Queue, emptyQ, isEmptyQ, enqueue, firstQ, dequeue) where
 
 data Queue a = QQQ [a] [a]
 {- INV. REP.: en QQQ fs bs,
-    *
+    * si fs es vacía, la queue está vacía.
 -}
 
 -- Crea una cola vacía.
@@ -25,3 +25,9 @@ enqueue :: a -> Queue a -> Queue a
 firstQ :: Queue a -> a
 -- Dada una cola la devuelve sin su primer elemento.
 dequeue :: Queue a -> Queue a
+
+emptyQ                 = QQQ [] []
+isEmptyQ   (QQQ fs bs) = null fs
+enqueue  x (QQQ fs bs) = error "HACER"
+firstQ     (QQQ fs bs) = error "HACER"
+dequeue    (QQQ fs bs) = error "HACER"
